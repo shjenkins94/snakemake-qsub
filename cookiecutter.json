@@ -1,6 +1,7 @@
 {
     "latency_wait": 60,
     "use_conda": true,
+    "use_singularity": true,
     "keep_going": true,
     "restart_times": 1,
     "jobs": 100,
