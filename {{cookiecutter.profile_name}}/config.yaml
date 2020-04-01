@@ -3,6 +3,7 @@ use-conda: {{cookiecutter.use_conda}}
 use-singularity: {{cookiecutter.use_singularity}}
 keep-going: {{cookiecutter.keep_going}}
 restart-times: {{cookiecutter.restart_times}}
+printshellcmds: "{{cookiecutter.print_shell_commands}}"
 jobs: {{cookiecutter.jobs}}
 cluster: "qsub-submit.py"
 cluster-status: "qsub-status.py"

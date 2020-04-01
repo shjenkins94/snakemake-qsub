@@ -23,9 +23,9 @@ Author: Joseph K Aicher
 """
 
 import sys  # for command-line arguments (get jobscript)
+import subprocess
 from pathlib import Path  # for path manipulation
 from snakemake.utils import read_job_properties  # get info from jobscript
-from snakemake.shell import shell  # to run shell command nicely
 
 # get the jobscript (last argument)
 jobscript = sys.argv[-1]
@@ -93,7 +93,7 @@ if threads > 1:
 else:
     resources_cmd = ""
 # add memory limit/request to resources
-resources_cmd += " -l h_vmem={mem_per_thread}M -l m_mem_free={mem_per_thread}M"
+resources_cmd += " -l s_vmem={mem_per_thread}M -l m_mem_free={mem_per_thread}M"
 # if runtime specified, use it
 if runtime:
     # make sure it is integer
@@ -120,22 +120,20 @@ cluster_cmd = " ".join(sys.argv[1:-1])
 # get command to do cluster command (no sync)
 submit_cmd = "qsub -terse -cwd"
 
-# run commands
-shell_stdout = shell(
-    # qsub submit command
-    submit_cmd
-    # specify required threads/resources
-    + " " + resources_cmd
-    # specify job name, output/error logfiles
-    + " " + jobinfo_cmd
-    # specify queue
-    + " " + queue_cmd
-    # put in pass-through commands
-    + " " + cluster_cmd
-    # finally, the jobscript
-    + " {jobscript}",
-    read=True  # get byte string from stdout
+# format command
+cmd = "{submit} {resources} {jobinfo} {queue} {cluster} {jobscript}".format(
+    submit=submit_cmd,
+    resources=resources_cmd,
+    jobinfo=jobinfo_cmd,
+    queue=queue_cmd,
+    cluster=cluster_cmd,
+    jobscript=jobscript
 )
 
-# obtain job id from this, and print
-print(shell_stdout.decode().strip())
+try:
+    res = subprocess.run(cmd, check=True, shell=True, stdout=subprocess.PIPE)
+except subprocess.CalledProcessError as e:
+    raise e
+
+res = res.stdout.decode()
+print(res.strip())
